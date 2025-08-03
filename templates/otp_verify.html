@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Verify OTP</h2>
+<form method="POST">
+  <div class="mb-3">
+    <label>OTP</label>
+    <input type="text" name="otp" required class="form-control">
+  </div>
+  <div class="mb-3">
+    <label>New Password</label>
+    <input type="password" name="password" required class="form-control">
+  </div>
+  <button class="btn btn-info" type="submit">Reset Password</button>
+</form>
+<form method="POST" action="{{ url_for('verify_otp') }}">
+    <input type="hidden" name="email" value="{{ email }}">
+
+    <label>Enter OTP:</label>
+    <input type="text" name="otp" required>
+
+    <button type="submit">Verify OTP</button>
+</form>
+
+{% endblock %}
