@@ -1,32 +1,30 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Welcome, {{ session.email }}</h2>
-
-<div class="mb-3">
+<h3 class="text-light">Welcome, {{ session.email }}</h3>
+<div class="d-flex justify-content-between mb-3">
   <a href="{{ url_for('add_expense') }}" class="btn btn-primary">Add Expense</a>
-  <a href="{{ url_for('download') }}" class="btn btn-success">Download Statement</a>
+  <a href="{{ url_for('download') }}" class="btn btn-success">Download PDF</a>
 </div>
-
-<h4>This Month: ₹{{ total_month }} | This Year: ₹{{ total_year }}</h4>
-
-<table class="table table-striped table-dark mt-3">
-  <thead>
-    <tr>
-      <th>Country</th><th>Currency</th><th>Category</th><th>Amount</th><th>Description</th><th>Date</th><th>Action</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for e in expenses %}
-    <tr>
-      <td>{{ e[0] }}</td>
-      <td>{{ e[1] }}</td>
-      <td>{{ e[2] }}</td>
-      <td>{{ e[3] }}</td>
-      <td>{{ e[4] }}</td>
-      <td>{{ e[5] }}</td>
-      <td><a onclick="return confirm('Delete this expense?')" href="{{ url_for('delete', id=e[6]) }}" class="btn btn-sm btn-danger">Delete</a></td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<h5 class="text-light">This Month: {{ total_month }} | This Year: {{ total_year }}</h5>
+<div class="table-responsive">
+  <table class="table table-dark table-striped">
+    <thead><tr><th>Country</th><th>Symbol</th><th>Category</th><th>Amount</th><th>Description</th><th>Date</th><th>Action</th></tr></thead>
+    <tbody>
+      {% for c,cat,amt,desc,date,id_ in expenses %}
+      <tr>
+        <td>{{ c }}</td>
+        <td>{{ cat }}</td>
+        <td>{{ amt }}</td>
+        <td>{{ desc }}</td>
+        <td>{{ date }}</td>
+        <td>
+          <form method="GET" action="{{ url_for('delete', id=id_) }}" onsubmit="return confirm('Delete?');">
+      <button class="btn">Delete</button>
+    </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}

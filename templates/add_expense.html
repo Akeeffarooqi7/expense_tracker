@@ -1,57 +1,79 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Add Expense</h2>
-<form method="POST">
-  <div class="mb-3">
-  <label>Country</label>
-  <select name="country" id="country" class="form-control" required onchange="setCurrency()">
-    <option value="">Select Country</option>
-    <option value="USA">USA</option>
-    <option value="UK">UK</option>
-    <option value="Australia">Australia</option>
-    <option value="Canada">Canada</option>
-    <option value="Germany">Germany</option>
-    <option value="Saudi Arabia">Saudi Arabia</option>
-    <option value="France">France</option>
-    <option value="Japan">Japan</option>
-    <option value="India">India</option>
-    <option value="Other">Other</option>
-  </select>
+<div class="container">
+  <h2 style="text-align: center; color: #f0f0f0;">Add Expense</h2>
+  <form method="POST" action="/add" class="form-dark" onsubmit="addTimestamp()">
+    <label for="country">Country</label>
+    <select name="country" id="country" required onchange="updateCurrencySymbol()">
+      <option value="USA">USA</option>
+      <option value="UK">UK</option>
+      <option value="India">India</option>
+      <!-- Add more countries below -->
+      <option value="Australia">Australia</option>
+      <option value="Germany">Germany</option>
+      <option value="France">France</option>
+      <option value="Saudi Arabia">Saudi Arabia</option>
+      <option value="UAE">UAE</option>
+    </select>
+
+    <label for="amount">Amount (<span id="currencySymbol">$</span>)</label>
+    <input type="number" name="amount" id="amount" required step="0.01" />
+
+    <label for="category">Category</label>
+    <input type="text" name="category" id="category" required />
+
+    <label for="description">Description</label>
+    <textarea name="description" id="description" rows="2"></textarea>
+
+    <input type="hidden" name="datetime" id="datetime" />
+    <button type="submit">Add Expense</button>
+  </form>
 </div>
 
-<div class="mb-3">
-  <label>Currency</label>
-  <input type="text" name="currency" id="currency" required class="form-control" readonly>
-</div>
+<style>
+  /* Dark/mobile styling within template */
+  .form-dark {
+    background: #1e1e1e;
+    padding: 1rem;
+    border-radius: 10px;
+    max-width: 480px;
+    margin: auto;
+  }
+  .form-dark label { color: #f0f0f0; margin-top: .5rem; display: block; }
+  .form-dark input, .form-dark select, .form-dark textarea {
+    width: 100%; margin: .3rem 0 1rem; padding: .8rem;
+    font-size: 1rem; background: #2b2b2b; color: #f0f0f0; border: none; border-radius: 8px;
+  }
+  .form-dark button {
+    width: 100%; padding: 1rem; background: #4a90e2; color: white;
+    border: none; font-size: 1.1rem; border-radius: 8px;
+  }
+  .form-dark button:active { background: #357ab8; }
+  @media (max-width:600px) {
+    .form-dark { padding: .8rem; }
+    .form-dark input, .form-dark button { font-size: 1.1rem; }
+  }
+</style>
 
-<div class="mb-3">
-  <label>Category</label>
-  <select name="category" class="form-control" required>
-    <option value="">Select Category</option>
-    <option value="Food & Dining">Food & Dining</option>
-    <option value="Transportation">Transportation</option>
-    <option value="Shopping">Shopping</option>
-    <option value="Entertainment">Entertainment</option>
-    <option value="Bills & Utilities">Bills & Utilities</option>
-    <option value="Healthcare">Healthcare</option>
-    <option value="Education">Education</option>
-    <option value="Travel">Travel</option>
-    <option value="Other">Other</option>
-  </select>
-</div>
-
-  <div class="mb-3">
-    <label>Amount (<span id="currencyLabel">Currency</span>)</label>
-    <input type="number" name="amount" required step="0.01" class="form-control">
-  </div>
-  <div class="mb-3">
-    <label>Description</label>
-    <input type="text" name="description" class="form-control">
-  </div>
-  <div class="mb-3">
-    <label>Date</label>
-    <input type="date" name="date" required class="form-control">
-  </div>
-  <button class="btn btn-success" type="submit">Add</button>
-</form>
+<script>
+  const currencyMap = 
+  {
+    USA: '$', 
+    UK: '£', 
+    India: '₹',
+    Australia: 'A$',
+    Germany: '€',
+    France: '€',
+    Saudi Arabia: '﷼',
+    UAE: 'د.إ'
+  };
+  function updateCurrencySymbol() {
+    const c = document.getElementById('country').value;
+    document.getElementById('currencySymbol').textContent = currencyMap[c] || '$';
+  }
+  function addTimestamp() {
+    document.getElementById('datetime').value = new Date().toISOString();
+  }
+  window.onload = () => { updateCurrencySymbol(); addTimestamp(); };
+</script>
 {% endblock %}
