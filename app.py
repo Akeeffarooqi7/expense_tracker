@@ -607,7 +607,7 @@ def add_expense():
     # Remember last used country/currency (from session)
     last_country = session.get('last_country', 'India')
     last_currency = session.get('last_currency', 'INR')
-    today = datetime.now().date()
+    # today = datetime.now().date()
     # Build country options with data attributes for currency
     country_options = ''.join([
         f'<option value="{c[0]}" data-currency="{c[1]}" data-symbol="{c[2]}" data-flag="{c[3]}"' + (' selected' if c[0] == last_country else '') + f'>{c[3]} {c[0]}</option>'
@@ -648,7 +648,7 @@ def add_expense():
           </div>
           <div class="col">
             <label>Date</label>
-            <input type="date" name="date" value="{today}">
+            <input type="date" name="date" id="dateInput">
           </div>
         </div>
 
@@ -666,13 +666,22 @@ def add_expense():
       var currency = selected.getAttribute('data-currency') || '';
       document.getElementById("currencyInput").value = currency;
     }});
-    // On page load, set currency if a country is pre-selected
+    // On page load, set currency if a country is pre-selected and set date to today
     window.addEventListener('DOMContentLoaded', function() {{
       var select = document.getElementById("countrySelect");
       var selected = select.options[select.selectedIndex];
       if(selected && selected.getAttribute('data-currency')) {{
         document.getElementById("currencyInput").value = selected.getAttribute('data-currency');
       }}
+      // Set date input to today
+      var dateInput = document.getElementById('dateInput');
+      if(dateInput) {{
+        var today = new Date();
+        var yyyy = today.getFullYear();
+        var mm = String(today.getMonth() + 1).padStart(2, '0');
+        var dd = String(today.getDate()).padStart(2, '0');
+        dateInput.value = yyyy + '-' + mm + '-' + dd;
+      }}      
     }});
     </script>
     '''
