@@ -8,10 +8,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Database connection
-app.config['SQLALCHEMY_DATABASE_URI'] = (
-    f"postgresql+psycopg2://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}"
-    f"@{os.getenv('POSTGRES_HOST')}:{os.getenv('POSTGRES_PORT')}/{os.getenv('POSTGRES_DB')}"
-)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://expense_tracker:AlpuJcVMKplqbtti35KH0tD2MyLnF2G6@dpg-d2ivg63uibrs73abdt30-a.singapore-postgres.render.com/expense_tracker_db_p9ol'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)

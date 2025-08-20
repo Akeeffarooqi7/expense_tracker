@@ -30,10 +30,8 @@ POSTGRES_HOST = os.getenv('POSTGRES_HOST', 'localhost')
 POSTGRES_PORT = os.getenv('POSTGRES_PORT', '5432')
 POSTGRES_DB = os.getenv('POSTGRES_DB', 'expense_tracker_db')
 
-app.config['SQLALCHEMY_DATABASE_URI'] = (
-    f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
-    f"@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
-)
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://expense_tracker:AlpuJcVMKplqbtti35KH0tD2MyLnF2G6@dpg-d2ivg63uibrs73abdt30-a.singapore-postgres.render.com/expense_tracker_db_p9ol"
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Mail config
