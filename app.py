@@ -30,7 +30,7 @@ POSTGRES_HOST = os.getenv('POSTGRES_HOST', 'localhost')
 POSTGRES_PORT = os.getenv('POSTGRES_PORT', '5432')
 POSTGRES_DB = os.getenv('POSTGRES_DB', 'expense_tracker_db')
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://expense_tracker:AlpuJcVMKplqbtti35KH0tD2MyLnF2G6@dpg-d2ivg63uibrs73abdt30-a.singapore-postgres.render.com/expense_tracker_db_p9ol"
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://expense_tracker:A2NCbGVVQhEDReVi4eoAsSJ29xCRPJKP@dpg-d2j1bih5pdvs73cok3ug-a.singapore-postgres.render.com/expense_tracker_db_e5ja"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
