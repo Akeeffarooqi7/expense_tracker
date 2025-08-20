@@ -740,7 +740,7 @@ def download():
     pdf.set_font('Arial', 'B', 11)
     pdf.cell(90, 8, 'Total', 1)
     pdf.cell(25, 8, f"{total_amount:.2f}", 1)
-    pdf.cell(105, 8, '', 1)
+    pdf.cell(75, 8, '', 1)
     pdf.ln() 
     
     
