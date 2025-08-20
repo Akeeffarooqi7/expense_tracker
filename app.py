@@ -170,7 +170,7 @@ BASE_HTML = """
     .navlinks{width:100%;justify-content:flex-end}
     .brand{margin-bottom:4px;}
     .menu-toggle{display:block;}
-    .menu-toggle{display:block; top:5px !important;}
+    .menu-toggle{display:block; top:-1.5px !important;}
     .navlinks{display:none;flex-direction:column;gap:0;background:var(--card);position:absolute;top:56px;right:12px;min-width:160px;padding:10px 0;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,0.4);z-index:10;}
     .navlinks.show{display:flex;}
     .navlinks a{margin:0;padding:12px 18px;}
@@ -247,7 +247,9 @@ BASE_HTML = """
       {{ content|safe }}
     </div>
 
-    <footer>BUILT BY MOHAMMED AKEEF FAROOQI</footer>
+    <footer>BUILT BY MOHAMMED AKEEF FAROOQI<br>
+    <a href="https://mail.google.com/mail/?view=cm&fs=1&to=mf.akeef@gmail.com&su=Inquiry&body=Hello%20I%20have%20an%20issue%20with%20this%20Tracker..."
+        target="_blank"style="text-decoration: none; color: inherit;">CONTACT US</a></footer>
   </div>
 </body>
 </html>
