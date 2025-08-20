@@ -170,6 +170,7 @@ BASE_HTML = """
     .navlinks{width:100%;justify-content:flex-end}
     .brand{margin-bottom:4px;}
     .menu-toggle{display:block;}
+    .menu-toggle{display:block; top:5px !important;}
     .navlinks{display:none;flex-direction:column;gap:0;background:var(--card);position:absolute;top:56px;right:12px;min-width:160px;padding:10px 0;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,0.4);z-index:10;}
     .navlinks.show{display:flex;}
     .navlinks a{margin:0;padding:12px 18px;}
@@ -201,6 +202,18 @@ BASE_HTML = """
     var nav = document.getElementById('navlinks');
     if(nav){ nav.classList.toggle('show'); }
   }
+  // Close menu if clicking outside
+  document.addEventListener('click', function(event) {
+    var nav = document.getElementById('navlinks');
+    var menuBtn = document.querySelector('.menu-toggle');
+    if (!nav || !menuBtn) return;
+    var isMenuOpen = nav.classList.contains('show');
+    if (!isMenuOpen) return;
+    // If click is NOT inside navlinks or menu button, close menu
+    if (!nav.contains(event.target) && !menuBtn.contains(event.target)) {
+      nav.classList.remove('show');
+    }
+  });
 </script>
 </head>
 <body>
@@ -701,6 +714,39 @@ def download():
     pdf.add_page()
     pdf.set_auto_page_break(True, 15)
     pdf.set_font('Arial', '', 11)
+
+    # Table header
+    pdf.cell(30, 8, 'Date', 1)
+    pdf.cell(30, 8, 'Country', 1)
+    pdf.cell(30, 8, 'Category', 1)
+    pdf.cell(25, 8, 'Amount', 1)
+    pdf.cell(30, 8, 'Currency', 1)
+    pdf.cell(45, 8, 'Description', 1)
+    pdf.ln()
+
+    for r in data:
+        pdf.cell(30, 8, str(r.date), 1)
+        pdf.cell(30, 8, r.country or '', 1)
+        pdf.cell(30, 8, r.category or '', 1)
+        pdf.cell(25, 8, str(r.amount), 1)
+        pdf.cell(30, 8, r.currency or '', 1)
+        pdf.cell(45, 8, (r.description or '')[:30], 1)
+        pdf.ln()
+
+    
+    total_amount = sum(float(r.amount) for r in data)
+    pdf.set_font('Arial', 'B', 11)
+    pdf.cell(90, 8, 'Total', 1)
+    pdf.cell(25, 8, f"{total_amount:.2f}", 1)
+    pdf.cell(105, 8, '', 1)
+    pdf.ln() 
+    
+    
+    # Save to temp file and send
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
+        pdf.output(tmp.name)
+        tmp.seek(0)
+        return send_file(tmp.name, as_attachment=True, download_name='expenses.pdf')
 
 
 # Run
