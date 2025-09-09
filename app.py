@@ -30,8 +30,10 @@ POSTGRES_HOST = os.getenv('POSTGRES_HOST', 'localhost')
 POSTGRES_PORT = os.getenv('POSTGRES_PORT', '5432')
 POSTGRES_DB = os.getenv('POSTGRES_DB', 'expense_tracker_db')
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://expense_tracker:A2NCbGVVQhEDReVi4eoAsSJ29xCRPJKP@dpg-d2j1bih5pdvs73cok3ug-a.singapore-postgres.render.com/expense_tracker_db_e5ja"
-
+app.config['SQLALCHEMY_DATABASE_URI'] = (
+    f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
+    f"@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Mail config
@@ -68,16 +70,24 @@ class OTPVerification(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
 class Expense(db.Model):
-    __tablename__ = 'expenses'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'))
-    amount = db.Column(db.Numeric(12,2))
-    category = db.Column(db.String(100))
-    currency = db.Column(db.String(10))
-    country = db.Column(db.String(100))
-    description = db.Column(db.Text)
-    date = db.Column(db.Date)
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
+  __tablename__ = 'expenses'
+  id = db.Column(db.Integer, primary_key=True)
+  user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'))
+  amount = db.Column(db.Numeric(12,2))
+  category = db.Column(db.String(100))
+  currency = db.Column(db.String(10))
+  country = db.Column(db.String(100))
+  description = db.Column(db.Text)
+  date = db.Column(db.Date)
+  created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+# New Credit model
+class Credit(db.Model):
+  __tablename__ = 'credits'
+  id = db.Column(db.Integer, primary_key=True)
+  user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'))
+  amount = db.Column(db.Numeric(12,2))
+  created_at = db.Column(db.DateTime, server_default=db.func.now())
 
 # Try create tables at startup (safe for dev)
 try:
@@ -202,6 +212,7 @@ BASE_HTML = """
     var nav = document.getElementById('navlinks');
     if(nav){ nav.classList.toggle('show'); }
   }
+
   // Close menu if clicking outside
   document.addEventListener('click', function(event) {
     var nav = document.getElementById('navlinks');
@@ -501,10 +512,19 @@ def dashboard():
             extract('year', Expense.date) == today.year,
             extract('month', Expense.date) == today.month
         ).scalar() or 0
+        # Get latest credit for user
+        credit_row = Credit.query.filter_by(user_id=session['user_id']).order_by(Credit.id.desc()).first()
+        credit_amount = float(credit_row.amount) if credit_row else 0.0
+        total_expenses = db.session.query(func.coalesce(func.sum(Expense.amount), 0)).filter(
+            Expense.user_id == session['user_id']
+        ).scalar() or 0.0
+        balance = credit_amount - float(total_expenses)
     except Exception as e:
         print("Dashboard DB error:", e)
         rows = []
         total_year = total_month = 0
+        credit_amount = 0.0
+        balance = 0.0
 
     # Build rows HTML
     rows_html = ""
@@ -533,8 +553,11 @@ def dashboard():
       <div class="row" style="align-items:center;justify-content:space-between;margin-bottom:8px">
         <div class="col small">This Month: <strong>{float(total_month):.2f}</strong></div>
         <div class="col small">This Year: <strong>{float(total_year):.2f}</strong></div>
+        <div class="col small">Credit Amount: <strong>{credit_amount:.2f}</strong></div>
+        <div class="col small">Current Balance: <strong>{balance:.2f}</strong></div>
         <div style="min-width:200px;text-align:right">
           <a class="btn btn-primary" href="{ url_for('add_expense') }">Add Expense</a>
+          <a class="btn btn-success" href="{ url_for('add_credit') }">Credit Amount</a>
         </div>
       </div>
       <div class="table-container">
@@ -547,6 +570,34 @@ def dashboard():
       </div>
     </div>
     """
+    return render_template_string(BASE_HTML, content=content)
+# Add credit amount
+@app.route('/add_credit', methods=['GET', 'POST'])
+@login_required
+def add_credit():
+    if request.method == 'POST':
+        amount = request.form.get('amount')
+        try:
+            credit = Credit(user_id=session['user_id'], amount=amount)
+            db.session.add(credit)
+            db.session.commit()
+            flash('Credit amount added!', 'success')
+            return redirect(url_for('dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            print('Add credit error:', e)
+            flash('Failed to add credit', 'danger')
+
+    content = '''
+    <div class="card form-wrap">
+      <h2>Add Credit Amount</h2>
+      <form method="POST">
+        <label>Credit Amount</label>
+        <input type="number" name="amount" step="0.01" min="0" required placeholder="Enter credit amount">
+        <button class="btn btn-success" type="submit">Add Credit</button>
+      </form>
+    </div>
+    '''
     return render_template_string(BASE_HTML, content=content)
 
 # Add expense
@@ -681,7 +732,7 @@ def add_expense():
         var mm = String(today.getMonth() + 1).padStart(2, '0');
         var dd = String(today.getDate()).padStart(2, '0');
         dateInput.value = yyyy + '-' + mm + '-' + dd;
-      }}      
+      }}            
     }});
     </script>
     '''
@@ -720,6 +771,7 @@ def download():
             self.set_y(-15)
             self.set_font('Arial', 'I', 8)
             self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
+         
 
     pdf = PDF()
     pdf.add_page()
@@ -743,23 +795,19 @@ def download():
         pdf.cell(30, 8, r.currency or '', 1)
         pdf.cell(45, 8, (r.description or '')[:30], 1)
         pdf.ln()
-
-    
+        
     total_amount = sum(float(r.amount) for r in data)
     pdf.set_font('Arial', 'B', 11)
     pdf.cell(90, 8, 'Total', 1)
     pdf.cell(25, 8, f"{total_amount:.2f}", 1)
     pdf.cell(75, 8, '', 1)
-    pdf.ln() 
-    
-    
+    pdf.ln()    
+
     # Save to temp file and send
     with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
         pdf.output(tmp.name)
         tmp.seek(0)
         return send_file(tmp.name, as_attachment=True, download_name='expenses.pdf')
-
-
-# Run
+        
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=True)
